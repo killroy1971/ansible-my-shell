@@ -1,0 +1,49 @@
+---
+# This playbook sets up my shell environment
+
+- stat:
+    path: ~/.ssh/id_rsa
+  register: keystatus
+
+- name: Generate SSH keypair
+  user:
+    name: glenn
+    generate_ssh_key: yes
+    ssh_key_bits: 4096
+    ssh_key_type: rsa
+    ssh_key_file: .ssh/id_rsa
+    ssh_key_passphrase: "L#t M# *n!"
+  when: keystatus.stat.exists == False
+
+- name: Pull my dotfiles from github
+  git: repo=https://github.com/killroy1971/dotfiles.git dest=$HOME/dotfiles clone=yes update=yes
+
+- name: Fix ssh config file mode
+  file:
+    path: ~/dotfiles/ssh_config
+    mode: 0600
+
+- name: Create symbolic links to new shell configuration files
+  file: src={{ item.name }} dest={{ item.dest }} state=link force=yes
+  with_items:
+    - { name: '~/dotfiles/bashrc', dest: '~/.bashrc' }
+    - { name: '~/dotfiles/zshrc', dest: '~/.zshrc' }
+    - { name: '~/dotfiles/vim', dest: '~/.vim' }
+    - { name: '~/dotfiles/vimrc', dest: '~/.vimrc' }
+    - { name: '~/dotfiles/gvimrc', dest: '~/.gvimrc' }
+    - { name: '~/dotfiles/gitconfig', dest: '~/.gitconfig' }
+    - { name: '~/dotfiles/gitignore', dest: '~/.gitignore' }
+    - { name: '~/dotfiles/ssh_config', dest: '~/.ssh/config' }
+    - { name: '~/dotfiles/Xdefaults', dest: '~/.Xdefaults' }
+
+- name: Create symbolic links to bash_profile 
+  file: src={{ item.name }} dest={{ item.dest }} state=link force=yes
+  with_items:
+    - { name: '~/dotfiles/bash_profile', dest: '~/.bash_profile' }
+  when: is_server == false
+
+- name: Create symbolic links to bash_profile_server
+  file: src={{ item.name }} dest={{ item.dest }} state=link force=yes
+  with_items:
+    - { name: '~/dotfiles/bash_profile_server', dest: '~/.bash_profile' }
+  when: is_server
