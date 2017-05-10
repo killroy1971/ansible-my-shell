@@ -12,6 +12,17 @@ is_server: True or false
 
 Note: My dotfiles repostiory will use keychain or ssh-agent to host SSH keys.
 
+Playbook Example
+----------------
+- hosts: <some_ansible_target>
+  become: no
+  vars:
+    is_server: true
+  roles:
+    - glenn
+
+The "become: no" is key.  Otherwsie, you'll run this against the root account!
+
 License
 -------
 MIT
