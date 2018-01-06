@@ -45,3 +45,12 @@
   with_items:
     - { name: '~/dotfiles/bash_profile_server', dest: '~/.bash_profile' }
   when: is_server
+
+#- name: Copy my SSH public key from the ansible server to the target server
+#  authorized_key:
+#    user: glenn
+#    state: present
+#    key: "{{ lookup('file', '/home/glenn/.ssh/id_rsa.pub') }}"
+#    path: /etc/ssh/authorized_keys/glenn
+#    manage_dir: False
+
