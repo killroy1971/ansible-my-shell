@@ -1,6 +1,6 @@
 ---
 - stat:
-    path: ~/.ssh/id_rsa
+    path: /home/glenn/.ssh/id_rsa
   register: keystatus
 
 - name: Generate SSH keypair
@@ -12,6 +12,18 @@
   when: 
     - keystatus.stat.exists == false
     - is_server == false
+
+- name: Add glenn to sudoers group - Debian or Raspbian
+  user: 
+    name: glenn
+    groups: sudo
+  when: ansible_distribution == "Debian"
+
+- name: Add glenn to sudoers group - RHEl, CentOS, or Fedora
+  user: 
+    name: glenn
+    groups: sudo
+  when: ( ansible_distribution == "RHEL" ) or ( ansible_distribution == "Fedora" ) or ( ansible_distribution == "CentOS" )
 
 - name: Pull my dotfiles from github
   git: repo=https://github.com/killroy1971/dotfiles.git dest=$HOME/dotfiles clone=yes update=yes
@@ -26,6 +38,7 @@
   with_items:
     - { name: '~/dotfiles/bashrc', dest: '~/.bashrc' }
     - { name: '~/dotfiles/zshrc', dest: '~/.zshrc' }
+    - { name: '~/dotfiles/zprofile', dest: '~/.zprofile' }
     - { name: '~/dotfiles/vim', dest: '~/.vim' }
     - { name: '~/dotfiles/vimrc', dest: '~/.vimrc' }
     - { name: '~/dotfiles/gvimrc', dest: '~/.gvimrc' }
@@ -46,11 +59,11 @@
     - { name: '~/dotfiles/bash_profile_server', dest: '~/.bash_profile' }
   when: is_server
 
-#- name: Copy my SSH public key from the ansible server to the target server
-#  authorized_key:
-#    user: glenn
-#    state: present
-#    key: "{{ lookup('file', '/home/glenn/.ssh/id_rsa.pub') }}"
-#    path: /etc/ssh/authorized_keys/glenn
-#    manage_dir: False
+- name: Copy my SSH public key from the ansible server to the target server
+  authorized_key:
+    user: glenn
+    state: present
+    key: "{{ lookup('file', '/home/glenn/.ssh/id_rsa.pub') }}"
+    path: /etc/ssh/authorized_keys/glenn
+    manage_dir: False
 
